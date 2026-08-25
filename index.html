@@ -350,6 +350,10 @@ let timer;
 let seconds=30;
 let usedQuestions=new Set();
 let consecutiveTruth=[0,0];
+  let questionIndex={
+  truth:[0,0],
+  dare:[0,0]
+};
 
 function show(id){
 document.querySelectorAll(".card").forEach(x=>x.classList.add("hidden"));
@@ -368,6 +372,10 @@ document.getElementById("g2").value
 category=1;
 questionCount=0;
 turn=0;
+  questionIndex={
+  truth:[0,0],
+  dare:[0,0]
+};
 showChoose();
 }
 
@@ -388,9 +396,15 @@ let list=data[category][type];
   return;
 }
 if(!Array.isArray(list)) list=list[genders[turn]];
-let available=list.filter(q=>!usedQuestions.has(q));
-let q=available[Math.floor(Math.random()*available.length)];
-usedQuestions.add(q);
+let index=questionIndex[type][turn];
+
+if(index>=list.length){
+  index=0;
+}
+
+let q=list[index];
+questionIndex[type][turn]=index+1;
+
 if(type==="truth"){
 consecutiveTruth[turn]++;
 }else{
@@ -487,6 +501,10 @@ questionCount++;
 if(questionCount>=14){
 questionCount=0;
 category++;
+  questionIndex={
+  truth:[0,0],
+  dare:[0,0]
+};
   if(category>4){
   show("finish");
   return;
