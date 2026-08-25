@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sandhed eller Konsekvens</title>
+  <link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#d7193f;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body:before{content:"♥  ♥  ♥  ♥  ♥  ♥  ♥  ♥  ♥  ♥";position:fixed;inset:0;color:#fff;font-size:35px;line-height:100px;opacity:.18;word-spacing:20px;pointer-events:none;z-index:0}
+.app{max-width:600px;margin:auto;min-height:100vh;padding:25px 18px;display:flex;align-items:center}
+.card{width:100%;background:#202024;border-radius:28px;padding:28px;box-shadow:0 10px 35px #0008}
+h1{text-align:center;font-size:38px;line-height:1.05}
+h2{text-align:center}
+input{width:100%;padding:16px;margin:7px 0;border:0;border-radius:14px;background:#303034;color:white;font-size:18px}
+button{width:100%;padding:17px;margin-top:12px;border:0;border-radius:15px;font-size:19px;font-weight:bold}
+.truth{background:#8748e8;color:white}
+.dare{background:#e34b69;color:white}
+.hidden{display:none}
+.category{text-align:center;color:#aaa}
+.player{text-align:center;font-size:28px;font-weight:bold;margin:15px 0}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.question{text-align:center;font-size:27px;min-height:150px;display:flex;align-items:center;justify-content:center}
+.timer{text-align:center;font-size:72px;font-weight:900}
+.center{text-align:center;color:#aaa}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div id="start" class="card">
+<h1>Det Frække Spil</h1>
+<p class="center">ADULTS ONLY 🔞</p>
+<input id="p1" placeholder="Spiller 1">
+<select id="g1">
+<option value="female">Dame</option>
+<option value="male">Mand</option>
+</select>
+
+<input id="p2" placeholder="Spiller 2">
+<select id="g2">
+<option value="female">Dame</option>
+<option value="male">Mand</option>
+</select>
+<button onclick="showRules()">SPILLETS REGLER</button>
+<button onclick="start()">START SPIL</button>
+</div>
+  <div id="rules" class="card hidden">
+  <h1>SPILLETS REGLER</h1>
+
+  <p class="center">I skiftes på tur til at vælge sandhed eller konsekvens, uddyb gerne svar. Der skrives om at man tænder på eller kan du lide eller fantasere du om - det smelter lidt sammen og fordi man fantasere om noget behøver det ikke at være noget man ønkser lige nu i virkeligheden. Er der en konsekvens eller sandhed man ikke vil svare på, vælger man en challenge man skal udføre, men pas på, de kan være spicy </p>
+
+  <button onclick="hideRules()">TILBAGE</button>
+</div>
+
+<div id="choose" class="card hidden">
+<div class="category" id="cat"></div>
+<div class="player" id="who"></div>
+<h2>Vælg</h2>
+<div class="choice">
+<button class="truth" onclick="question('truth')">SANDHED</button>
+<button class="dare" onclick="question('dare')">KONSEKVENS</button>
+</div>
+</div>
+
+<div id="play" class="card hidden">
+<div class="category" id="cat2"></div>
+<div class="player" id="who2"></div>
+<div class="center" id="type"></div>
+<div class="question" id="q"></div>
+<div class="timer" id="timer">30</div>
+ <button id="challengeBtn" class="dare hidden" onclick="startChallenge()">CHALLENGE</button> 
+<button onclick="answered()">FÆRDIG / HAR SVARET</button>
+</div>
+<div id="challenge" class="card hidden">
+  <h2>VÆLG DIN CHALLENGE</h2>
+
+  <button id="ch1" onclick="selectChallenge(0)"></button>
+  <button id="ch2" onclick="selectChallenge(1)"></button>
+  <button id="ch3" onclick="selectChallenge(2)"></button>
+  <button id="ch4" onclick="selectChallenge(3)"></button>
+  <button id="ch5" onclick="selectChallenge(4)"></button>
+  <div id="challengeResult"></div>
+</div>
+
+  
+
+<div id="ready" class="card hidden">
+  <h2>Tiden er ude!</h2>
+<div class="player" id="next"></div>
+<p class="center">Er du klar til næste spørgsmål?</p>
+<button onclick="next()">KLAR</button>
+</div>
+  <div id="categoryChange" class="card hidden">
+  <h1>NY KATEGORI 🎉</h1>
+  <p class="muted" id="categoryChangeText"></p>
+  <button onclick="continueCategory()">KLAR</button>
+</div>
+
+<div id="finish" class="card hidden">
+<h1>🎉 Godt spil!</h1>
+<p class="center">I har gennemført alle 4 kategorier.</p>
+<button onclick="location.reload()">SPIL IGEN</button>
+</div>
+
+</div>
+
+<script>
+const data={
+ 
+1:{
+  truth:{
+    female:[
+  "Hvad foretrækker du- Med eller uden kønshår?",
+  "Har du nogensinde haft sex i det fri?",
+  "Hvor er dit yndlingssted at have sex?",
+  "Kan du lide at se nøgne mennesker evt hygge sig?",
+  "Vil du gerne have en intim piercing?",
+  "Kan du lide at blive snakket frækt til under samleje?",
+  "Er du nogensinde blevet våd i en pinlig situation?",
+  "Har du nogensinde været på stripklub? kunne du finde på det?",
+  "Har du nogensinde badet nøgen? og var du alene?",
+  "Har du nogensinde lavet stripshow ?",
+  "Har du nogensinde sextekstet med en anden?"
+],
+    male:[
+  "Hvad foretrækker du- Med eller uden kønshår?",
+  "Har du nogensinde haft sex i det fri?",
+  "Hvor er dit yndlingssted at have sex?",
+  "Kan du lide at se nøgne mennesker hygge sig?",
+  "Vil du gerne have en intim piercing?",
+  "Kan du lide at snakke frækt under samleje?",
+  "Har du nogensinde onaneret til en pornofilm?",
+  "Har du nogensinde været på stripklub? kunne du finde på det",
+  "Har du nogensinde badet nøgen? og var du alene",
+  "Har du nogensinde lavet stripshow ?",
+  "Har du nogensinde sextekstet med en anden?"
+],
+  },
+  dare:{
+    female:[
+      "Tag bukserne af din partner, mens du sidder på hug og partneren står op. Slut med kys på munden",
+      "kys inderligt i 30 sekunder",
+      "tag forsigtigt overdelen af din partner. Slut med kys på munden",
+      "Giv din partner fodmassage i 2 minutter",
+      "Kys din partner 10 forskellige steder på ansigt og hals",
+      "Massere din partners ryg og skulder i 5 minutter. Slut med kys på munden"
+    ],
+    male:[
+      "Tag bukserne af din partner, mens du sidder på hug og partneren står op. Slut med kys på munden",
+      "kys inderligt i 30 sekunder",
+      "tag forsigtigt overdelen af din partner. Slut med kys på munden",
+      "Giv din partner fodmassage i 2 minutter",
+      "Kys din partner 10 forskellige steder på ansigt og hals",
+      "Massere din partners ryg og skulder i 5 minutter. Slut med kys på munden"
+    ]
+  }
+},
+
+2:{
+truth:{
+  female:[
+  "Er der noget, du vil ændre på din nuværende partner vedrørende sex?",
+  "kan du tænde på at se din partner kysse med anden kvinde?",
+  "Har du nogensinde taget nøgenbilleder af dig selv?",
+  "Har du nogensinde været en partner utro, fordi du var for fuld?",
+  "Vil du gerne prøve at kysse en anden?",
+  "Kan du lide at bruge sexlegetøj? Hvad er din favorit?",
+  "Hvilken genre pornofilm kan du bedst lide at se?",
+  "Har du nogensinde haft sex i en pool eller havet?",
+  "Har du nogensinde kærtegnet din partners kønsdele i offentligheden?",
+  "Hvor drømmer du om at have sex?",
+  "Tænder du på pigesex",
+  "Kan du lide at få oralsex?",
+  "Kunne du finde på at spille strip-poker eller andre sexspil med din partner?"
+],
+  male:[
+  "Er der noget, du vil ændre på din nuværende partner vedrørende sex?",
+  "Kan du tænde på at se din partner kysse en anden kvinde elle mand?",
+  "Hvor er dit yndlingssted at have sex?",
+  "Har du nogensinde taget nøgenbilleder af dig selv?",
+  "Har du nogensinde været en partner utro, fordi du var for fuld?",
+  "Vil du gerne prøve at kysse en anden?",
+  "Kan du lide at bruge sexlegetøj? Hvad er din favorit?",
+  "Hvilken genre pornofilm kan du bedst lide at se?",
+  "Har du nogensinde haft sex i en pool eller havet?",
+  "Har du nogensinde kærtegnet din partners kønsdele i offentligheden?",
+  "Hvor drømmer du om at have sex?",
+  "Kan du lide at få oralsex?",
+  "Kan du finde på at spille strip-poker eller andre sexspil med din partner?"
+]},
+ dare:{
+    female:[
+      "Tag din partners underbukser ad mens de står op og du sidder på hug. Slut med et kys på kønsdelen",
+      "Massere di partners baller og lår i 5 minutter",
+      "Kørtegn din partners kønsdele i 3 minutter, mens i har øjenkontakt. slut af med et tungekys",
+      "Nip, bid og lad din tunge lege med din partners brystvorter. slut af med at kysse dem",
+      "Lad din partner køre sit lem mellem dine bryster i 2 minutter. Slut af med at give ham et Kys på munden og sig tak"
+    ],
+    male:[
+      "Tag din partners underbukser ad mens de står op og du sidder på hug. Slut med et kys på kønsdelen",
+      "Massere di partners baller og lår i 5 minutter",
+      "Kørtegn din partners kønsdele i 3 minutter, mens i har øjenkontakt. slut af med et tungekys",
+      "Nip, bid og lad din tunge lege med din partners brystvorter. slut af med at kysse dem",
+      "Giv din partner bind for øjenen og leg med en ren dildo rundt på hele hendes krop i 3 minutter. Slut med et tungekys"
+    ]
+  }
+},
+3:{
+truth:{
+  female:[
+  "Har du nogensinde været din partner utro med en af samme køn som dig selv?",
+  "Thumb in or thumb out?",
+  "Kunne du finde på at gå i byen uden trusser?",
+  "Kan du lide at blive hævet i håret, når du har sex?",
+  "Kan du lide at blive rørt på kønsdelene mens I har sex?",
+  "Hvad synes du om mild spanking under sex?",
+  "Har du nogensinde brugt analt sexlegetøj? Hvis nej, vil du prøve?",
+  "Vil du gerne lave et sextape?",
+  "Er din partners penis stor nok, eller?",
+  "Har du nogensinde modtaget frække billeder fra det modsatte køn?",
+  "Hvilken sexstilling kan du bedst lide?",
+  "Hvad vil du gerne prøve i seng, som du aldrig har turdet gøre før?",
+  "Har du nogensinde fundet dig selv nøgen ved siden af en anden til en fest?",
+  "Kunne du fristes til at bruge en remote vibrator i byen, som din partner styrer?",
+  "Har du nogen, du fortryder at have haft sex med?"
+],
+  male:[
+  "Har du nogensinde modtaget frække billeder fra det modsatte køn?",
+  "Hvilken sexstilling kan du bedst lide?",
+  "Har du nogensinde fundet dig selv nøgen ved siden af en anden til en fest?",
+  "Kunne du tænde på en trekant? Hvis ja, MMF eller MFF?",
+  "Kan du lide at blive rørt på kønsdelene mens I har sex?",
+  "Hvad vil du gerne prøve i seng, som du aldrig har turdet gøre før?",
+  "Hvilken kropsdel vil du helst komme på?",
+  "Har du prøvet analsex? Hvis ja, var det godt? Hvis nej, kunne du tænke dig at prøve?",
+  "Kan du lide at blive kradset på ryggen eller baller når du har sex?",
+]},
+dare:{
+ female:[
+      "Sid med spredte ben til næste spørgsmål er besvaret. Dæk ikke for herlighederne",
+      "Sæt dig på din partners ansigt, forsigtigt og lad ham slikke dig i 3 minutter.",
+      "Kærtegn dine kønsdele i 2 minutter. slut af med at kysse din partner på munden",
+      "Slik og kys din partners kønsdele i 3 minutter",
+      "Kærtegn og onaner din partners kønsdele i 3 minutter mens i har øjenkontakt. Slut med et kys ",
+      "Bind din partner til en stol og giv bind for øjnene, leg nu med dennes krop i 3 minutter",
+      "Kys din partner med tungen, mens du kærtegner dennes intime dele i 2 minutter"
+    ],
+    male:[
+      "Kærtegn dine kønsdele i 2 minutter. slut af med at kysse din partner på munden",
+      "Slik og kys din partners kønsdele i 3 minutter",
+      "Kærtegn og onaner din partners kønsdele i 3 minutter mens i har øjenkontakt. Slut med et kys ",
+      "Bind din partner til en stol og giv bind for øjnene, leg nu med dennes krop i 3 minutter",
+      "Kys din partner med tungen, mens du kærtegner dennes intime dele i 2 minutter",
+      "Kærtegn og dask din partners kønsdele med dit lem, ingen penetration, i 2 minutter"
+    ]
+  }
+},
+
+4:{
+truth:{
+  female:[
+"Kunne du tænde på at se din partner være sammen med en anden?",
+"Kunne du tænde på en trekant? Hvis ja, MMF eller MFF?",
+"Kan du lide at blive stimuleret til edge og tilbage?",
+"Har du nogensinde prøvet at være med i en trekant eller flere?",
+"Har du prøvet analsex? Hvis ja, var det godt? Hvis nej, kunne du tænke dig at prøve?",
+"Fantaserer du om eller vil prøve DP enten to i en eller en i hvert evt med en dildo?",
+"Kan du finde på at tage på swingerklub med din partner?",
+"Vil du gerne have bind for øjnene, bindes og udnyttes af din partner?", 
+"Kan du lide at få en eller flere fingre op i fissen mens i har sex og er rigtig klar?",
+"Har din partner kommet i din mund?",
+"Vil du lad en anden kvinde tilfredsstille dig mens din mand kigger på? ikke mer end det eller?", 
+"Vil du lade en anden kvinde røre din partner, mens du var til stede?",
+"Kunne du tænde på at have sex med en anden mand, mens din partner ser på, og han tager dig bagefter eller imens?",
+"Kan du lide at få finger analt mens du får oral sex?",
+"Har du prøvet at have en spøjteorgasme? Hvis ikke, gad du?"
+],
+  male:[
+"Kan du finde på at tage på swingerklub med din partner?",
+"Kan du lide at blive stimuleret til edge og tilbage?",
+"Har du prøvet at have en spøjteorgasme? Hvis ikke, gad du?",
+"Har du nogensinde prøvet at være med i en trekant eller flere?",
+"Kan du lige at blive analt stimuleret mens du modtager blow eller handjob?",
+"Vil du lade en anden mand røre din partner, mens du var til stede? I er nok lidt fulde",
+"Fantaserer du om eller vil prøve DP enten to i en eller en i hvert evt med en dildo?",
+"Vil du gerne have bind for øjnene, bindes og udnyttes af din partner?",  
+"Vil du gerne lave et sextape?"
+]},
+dare:{
+ female:[
+      "Sid med spredte ben til næste spørgsmål er besvaret. Dæk ikke for herlighederne",
+      "Mens din partner sidder ned, skal du sætte dig på hans lem og bol 5-10 gange langsomt. slut med et tunge kys",
+      "indfør eller lad din partner indføre en buttplug og lad den sidde til næste konsekvens er overstået, gerne længere hvis du tør",
+      "Brug hver onsdag sammen til at finde G-punktet indtil det lykkedes. Husk samarbejde og guidening.",
+      "Øv 1. lørdag i hver måned eller oftere på analsex, hvis i tør 😈",
+      "Giv oralsex eller handjob i 2-3 minutter. Brug finger analt hvis ok med partner",
+      "Brug en dildo til at blive dobbelt penetreret senere i aften",
+      "kærtegn dine intime dele indtil næste konsekvens",
+      "Kærtegn din partners intim dele, mens du fortæller ham om en fantasi du har. Minimum 5 minutter"
+    ],
+    male:[
+      "Brug hver onsdag sammen til at finde G-punktet indtil det lykkedes. Husk samarbejde og guidening.",
+      "Elsk din partner i 3 minutter mens hun kærtegner sine bryster og kønsdele med en dildo",
+      "Øv første lørdag i hver måned eller oftere på analsex, hvis i tør 😈",
+      "Giv oralsex i 2-3 minutter. Brug finger analt hvis ok med partner",
+      "Brug en dildo til at dobbelt penetreret din partner senere i aften",
+      "Øv 1. lørdag i hver måned eller oftere på analsex, hvis i tør 😈",
+      "Kærtegn din partners intim dele, mens du fortæller ham om en fantasi du har. Minimum 5 minutter",
+      "Brug en luftvibrator i minimum 3 minutter på din partner"
+    ]
+  }
+  },
+};
+
+const challenges={
+  male:[
+    "Lad din partner bestemme en hel weekend, hvor du kun må sige ja til alle hendes ønsker",
+    "Arranger en romantisk weekend for jer begge 2",
+    "Tag på bar og find en, som en af jer skal prøve at score og kysse med",
+    "Næste weekend skal du sætte dig mellem din partners ben og lege med hans kønsdele, mens du fortæller en historie om hvordan du er blevet scoret og bollet af en anden, husk detaljer. Minimum 15 minutter",
+    "Aftal en weekend hvor i opretter en sexdate profil og skriver samt sender billeder evt uden ansigt til andre. slet efter weekenden"
+  ],
+  female:[
+    "Brug en fjernstyret vibrator, styret af din partner mens i er restaurent eller bar. partner betaler, du vælger sted. elsk på vejen hjem i bilen",
+    "Giv din partner ret til, til hver en tid og sted, at få et blow eller handjob, uden brok",
+    "Tag på bar og find en, som en af jer skal prøve at score og kysse med",
+    "Næste gang i er på ferie, skal i dyrke sex på altanen",
+    "Aftal en weekend hvor i opretter en sexdate profil og skriver samt sender billeder evt uden ansigt til andre. slet efter weekenden"
+  ]
+};
+  
+ function showRules(){
+  document.querySelectorAll(".card").forEach(x => x.classList.add("hidden"));
+  document.getElementById("rules").classList.remove("hidden");
+}
+
+function hideRules(){
+  document.querySelectorAll(".card").forEach(x => x.classList.add("hidden"));
+  document.getElementById("start").classList.remove("hidden");
+} 
+
+let players=[];
+let genders=[];
+let category=1;
+let questionCount=0;
+let turn=0;
+let timer;
+let seconds=30;
+let usedQuestions=new Set();
+let consecutiveTruth=[0,0];
+
+function show(id){
+document.querySelectorAll(".card").forEach(x=>x.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+
+function start(){
+players=[
+document.getElementById("p1").value.trim()||"Spiller 1",
+document.getElementById("p2").value.trim()||"Spiller 2"
+];
+genders=[
+document.getElementById("g1").value,
+document.getElementById("g2").value
+];
+category=1;
+questionCount=0;
+turn=0;
+showChoose();
+}
+
+function showChoose(){
+document.getElementById("cat").textContent=category===1?"FLIRTENDE ❤️":category===2?"FRÆKKE 🔥":category===3?"HOT 🌶️":"PIKANT 😈";
+document.getElementById("who").textContent=players[turn]+"'s TUR";
+show("choose");
+}
+
+function question(type){
+if(type==="truth" && consecutiveTruth[turn]>=2){
+    alert("Du har taget 2 sandhedsspørgsmål i træk. Nu skal du vælge KONSEKVENS.");
+    return;
+}
+let list=data[category][type];
+  if(!list){
+  alert("FEJL: Kategori " + category + " mangler " + type);
+  return;
+}
+if(!Array.isArray(list)) list=list[genders[turn]];
+let available=list.filter(q=>!usedQuestions.has(q));
+let q=available[Math.floor(Math.random()*available.length)];
+usedQuestions.add(q);
+if(type==="truth"){
+consecutiveTruth[turn]++;
+}else{
+consecutiveTruth[turn]=0;
+}
+  
+document.getElementById("cat2").textContent="KATEGORI "+category;
+document.getElementById("who2").textContent=players[turn];
+document.getElementById("type").textContent=
+type==="truth"?"SANDHED":"KONSEKVENS";
+  document.getElementById("challengeBtn").classList.toggle("hidden", type!=="dare");
+document.getElementById("q").textContent=q;
+
+seconds=30;
+document.getElementById("timer").textContent=seconds;
+show("play");
+
+clearInterval(timer);
+timer=setInterval(()=>{
+seconds--;
+document.getElementById("timer").textContent=seconds;
+
+if(seconds<=0){
+clearInterval(timer);
+document.getElementById("next").textContent=players[1-turn];
+show("ready");
+}
+},1000);
+}
+function answered(){
+clearInterval(timer);
+document.getElementById("next").textContent=players[1-turn];
+show("ready");
+}
+ function startChallenge(){
+  clearInterval(timer);
+
+  let list=challenges[genders[turn]];
+
+  document.getElementById("ch1").textContent=list[0];
+  document.getElementById("ch2").textContent=list[1];
+  document.getElementById("ch3").textContent=list[2];
+  document.getElementById("ch4").textContent=list[3];
+  document.getElementById("ch5").textContent=list[4];
+
+  document.getElementById("ch1").style.display="block";
+  document.getElementById("ch2").style.display="block";
+  document.getElementById("ch3").style.display="block";
+  document.getElementById("ch4").style.display="block";
+  document.getElementById("ch5").style.display="block";
+
+  document.getElementById("challengeResult").innerHTML="";
+
+  show("challenge");
+}
+  let selectedChallenge="";
+
+function selectChallenge(index){
+  let list=challenges[genders[turn]];
+  selectedChallenge=list[index];
+
+ document.getElementById("ch1").style.display="none";
+ document.getElementById("ch2").style.display="none";
+ document.getElementById("ch3").style.display="none";
+ document.getElementById("ch4").style.display="none";
+ document.getElementById("ch5").style.display="none";
+
+  document.getElementById("challengeResult").innerHTML=`
+    <h2>DIN CHALLENGE</h2>
+    <div class="question">${selectedChallenge}</div>
+    <button onclick="challengeAccepted()">CHALLENGE ACCEPTED</button>
+  `;
+}
+function challengeAccepted(){
+  document.getElementById("challengeResult").innerHTML=`
+    <h2>DIN CHALLENGE</h2>
+    <div class="question">${selectedChallenge}</div>
+    <p class="center">📸 TAG SCREENSHOT</p>
+    <button onclick="challengeSet()">CHALLENGE SET</button>
+  `;
+}
+function challengeSet(){
+  document.getElementById("next").textContent=players[1-turn];
+  show("ready");
+}  
+  function continueCategory(){
+showChoose();
+}
+
+  function next(){
+turn=1-turn;
+questionCount++;
+
+if(questionCount>=14){
+questionCount=0;
+category++;
+  if(category>4){
+  show("finish");
+  return;
+}
+if(category===2){
+  document.getElementById("categoryChangeText").innerHTML =
+    "Hvis I ikke allerede har smidt tøjet, skal I kun have undertøj på nu ❤️<br><br>Nu bliver det lidt mere intenst 😍";
+}else if(category===3){
+  document.getElementById("categoryChangeText").innerHTML =
+    "Nu skruer vi lidt op for temperaturen 😈🔥<br><br>Herfra bliver spørgsmålene mere frække, mere intime og lidt sværere at slippe udenom…<br><br>Og hvis I ikke er nøgne nu, er det tid til at være det inden i starter denne runde ❤️‍🔥";
+}else if(category===4){
+  document.getElementById("categoryChangeText").innerHTML =
+    "Nu er I nået til den vilde kategori 😈🔥<br><br>Her bliver det mere intenst, mere grænseoverskridende og langt sværere at gemme sig bag et “nej”...<br><br>Så hvis I troede, I allerede havde været modige, er det nu, I finder ud af, hvor modige I egentlig er ❤️‍🔥";
+}
+show("categoryChange");
+return;
+
+}
+
+showChoose();
+}
+ if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+} 
+</script>
+</body>
+</html>
