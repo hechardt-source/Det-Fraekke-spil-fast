@@ -399,8 +399,15 @@ if(!Array.isArray(list)) list=list[genders[turn]];
 let index=questionIndex[type][turn];
 
 if(index>=list.length){
-  index=0;
+  if(type==="truth"){
+    alert("Der er ikke flere sandhedsspørgsmål i denne kategori. Du skal vælge KONSEKVENS.");
+    return;
+  }else{
+    alert("Der er ikke flere konsekvenser i denne kategori.");
+    return;
+  }
 }
+
 
 let q=list[index];
 questionIndex[type][turn]=index+1;
