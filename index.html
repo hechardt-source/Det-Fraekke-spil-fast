@@ -44,13 +44,7 @@ button{width:100%;padding:17px;margin-top:12px;border:0;border-radius:15px;font-
 <option value="male">Mand</option>
 </select>
 <button onclick="showRules()">SPILLETS REGLER</button>
-  <h3 class="center">VÆLG FORDELING</h3>
 
-<select id="distribution">
-  <option value="10-5">10 SANDHED / 5 KONSEKVENS</option>
-  <option value="9-6">9 SANDHED / 6 KONSEKVENS</option>
-  <option value="8-7">8 SANDHED / 7 KONSEKVENS</option>
-</select>
 <button onclick="start()">START SPIL</button>
 </div>
   <div id="rules" class="card hidden">
@@ -360,13 +354,9 @@ let consecutiveTruth=[0,0];
   truth:[0,0],
   dare:[0,0]
 };
-  truthCount=[0,0];
-dareCount=[0,0];
+  
   let truthCount=[0,0];
 let dareCount=[0,0];
-
-let targetTruth=10;
-let targetDare=5;
 
 function show(id){
 document.querySelectorAll(".card").forEach(x=>x.classList.add("hidden"));
@@ -385,9 +375,7 @@ document.getElementById("g2").value
 category=1;
 questionCount=0;
 turn=0;
-  let distribution=document.getElementById("distribution").value.split("-");
-targetTruth=parseInt(distribution[0]);
-targetDare=parseInt(distribution[1]);
+
   questionIndex={
   truth:[0,0],
   dare:[0,0]
@@ -414,15 +402,7 @@ let list=data[category][type];
   return;
 }
 if(!Array.isArray(list)) list=list[genders[turn]];
-  if(type==="truth" && truthCount[turn]>=targetTruth){
-  alert("Du har brugt alle dine sandheder. Du skal vælge KONSEKVENS.");
-  return;
-}
-
-if(type==="dare" && dareCount[turn]>=targetDare){
-  alert("Du har brugt alle dine konsekvenser. Du skal vælge SANDHED.");
-  return;
-}
+ 
 let index=questionIndex[type][turn];
 
 if(index>=list.length){
