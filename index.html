@@ -391,66 +391,101 @@ document.getElementById("who").textContent=players[turn]+"'s TUR";
 show("choose");
 }
 
-function question(type){
-if(type==="truth" && consecutiveTruth[turn]>=2){
-    alert("Du har taget 2 sandhedsspørgsmål i træk. Nu skal du vælge KONSEKVENS.");
-    return;
-}
-let list=data[category][type];
-  if(!list){
-  alert("FEJL: Kategori " + category + " mangler " + type);
-  return;
-}
-if(!Array.isArray(list)) list=list[genders[turn]];
- 
-let index=questionIndex[type][turn];
 
-if(index>=list.length){
-  if(type==="truth"){
-    alert("Der er ikke flere sandhedsspørgsmål i denne kategori. Du skal vælge KONSEKVENS.");
-    return;
-  }else{
-    alert("Der er ikke flere konsekvenser i denne kategori.");
+function question(type){
+
+  let truthList=data[category].truth[genders[turn]];
+  let dareList=data[category].dare[genders[turn]];
+
+  let truthLeft=truthCount[turn] < truthList.length;
+  let dareLeft=dareCount[turn] < dareList.length;
+
+  // Maksimum 2 sandheder i træk
+  if(type==="truth" && consecutiveTruth[turn]>=2){
+
+    if(dareLeft){
+      alert("Du har taget 2 sandhedsspørgsmål i træk. Nu skal du vælge KONSEKVENS.");
+      return;
+    }
+
+    // Hvis der ikke er flere konsekvenser,
+    // må spilleren fortsætte med sandhed.
+  }
+
+  // Hvis spilleren vælger sandhed, men der ikke er flere,
+  // skal der vælges konsekvens.
+  if(type==="truth" && !truthLeft){
+
+    if(dareLeft){
+      alert("Der er ikke flere sandhedsspørgsmål. Du skal vælge KONSEKVENS.");
+      return;
+    }
+
     return;
   }
-}
 
+  // Hvis spilleren vælger konsekvens, men der ikke er flere,
+  // skal der vælges sandhed.
+  if(type==="dare" && !dareLeft){
 
-let q=list[index];
-questionIndex[type][turn]=index+1;
+    if(truthLeft){
+      alert("Der er ikke flere konsekvenser. Du skal vælge SANDHED.");
+      return;
+    }
 
- if(type==="truth"){
-  consecutiveTruth[turn]++;
-  truthCount[turn]++;
-}else{
-  consecutiveTruth[turn]=0;
-  dareCount[turn]++;
+    return;
+  }
+
+  let list=type==="truth" ? truthList : dareList;
+  let index=questionIndex[type][turn];
+
+  if(index>=list.length){
+    return;
+  }
+
+  let q=list[index];
+
+  questionIndex[type][turn]=index+1;
+
+  if(type==="truth"){
+    truthCount[turn]++;
+    consecutiveTruth[turn]++;
+  }else{
+    dareCount[turn]++;
+    consecutiveTruth[turn]=0;
+  }
+
+  document.getElementById("cat2").textContent="KATEGORI "+category;
+  document.getElementById("who2").textContent=players[turn];
+
+  document.getElementById("type").textContent=
+    type==="truth" ? "SANDHED" : "KONSEKVENS";
+
+  document.getElementById("challengeBtn")
+    .classList.toggle("hidden",type!=="dare");
+
+  document.getElementById("q").textContent=q;
+
+  seconds=30;
+  document.getElementById("timer").textContent=seconds;
+
+  show("play");
+
+  clearInterval(timer);
+
+  timer=setInterval(()=>{
+    seconds--;
+    document.getElementById("timer").textContent=seconds;
+
+    if(seconds<=0){
+      clearInterval(timer);
+      document.getElementById("next").textContent=players[1-turn];
+      show("ready");
+    }
+  },1000);
 }
   
-document.getElementById("cat2").textContent="KATEGORI "+category;
-document.getElementById("who2").textContent=players[turn];
-document.getElementById("type").textContent=
-type==="truth"?"SANDHED":"KONSEKVENS";
-  document.getElementById("challengeBtn").classList.toggle("hidden", type!=="dare");
-document.getElementById("q").textContent=q;
-
-seconds=30;
-document.getElementById("timer").textContent=seconds;
-show("play");
-
-clearInterval(timer);
-timer=setInterval(()=>{
-seconds--;
-document.getElementById("timer").textContent=seconds;
-
-if(seconds<=0){
-clearInterval(timer);
-document.getElementById("next").textContent=players[1-turn];
-show("ready");
-}
-},1000);
-}
-function answered(){
+  function answered(){
 clearInterval(timer);
 document.getElementById("next").textContent=players[1-turn];
 show("ready");
