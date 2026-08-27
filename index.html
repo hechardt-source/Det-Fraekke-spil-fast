@@ -549,13 +549,27 @@ showChoose();
 turn=1-turn;
 questionCount++;
 
-if(questionCount>=30){
-questionCount=0;
-category++;
+
+  if(
+  questionCount>=30 ||
+  (
+    truthCount[0]>=data[category].truth[genders[0]].length &&
+    dareCount[0]>=data[category].dare[genders[0]].length &&
+    truthCount[1]>=data[category].truth[genders[1]].length &&
+    dareCount[1]>=data[category].dare[genders[1]].length
+  )
+){
+  questionCount=0;
+  category++;
+
   questionIndex={
-  truth:[0,0],
-  dare:[0,0]
-};
+    truth:[0,0],
+    dare:[0,0]
+  };
+
+  truthCount=[0,0];
+  dareCount=[0,0];
+  consecutiveTruth=[0,0];
   if(category>4){
   show("finish");
   return;
